@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全球热点聚合</title>
+    <link rel="stylesheet" href="./styles/common.css">
+    <style>
+        /* 应用特定样式 */
+        .app {
+            min-height: 100vh;
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-attachment: fixed;
+        }
+
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .app-title {
+            color: white;
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+        }
+
+        .last-updated {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: var(--font-size-sm);
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+        }
+
+        .app-main {
+            padding: var(--spacing-xl) var(--spacing-lg);
+        }
+
+        /* 网格布局 */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-2xl);
+        }
+
+        @media (min-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr;
+                grid-template-areas:
+                    "news news"
+                    "weibo douyin"
+                    "baidu toutiao"
+                    "zhihu hackerNews"
+                    "rednote bili";
+            }
+
+            .content-grid> :first-child {
+                grid-area: news;
+            }
+
+            .content-grid> :nth-child(2) {
+                grid-area: weibo;
+            }
+
+            .content-grid> :nth-child(3) {
+                grid-area: douyin;
+            }
+
+            .content-grid> :nth-child(4) {
+                grid-area: baidu;
+            }
+
+            .content-grid> :nth-child(5) {
+                grid-area: toutiao;
+            }
+
+            .content-grid> :nth-child(6) {
+                grid-area: zhihu;
+            }
+
+            .content-grid> :nth-child(7) {
+                grid-area: hackerNews;
+            }
+
+            .content-grid> :nth-child(8) {
+                grid-area: rednote;
+            }
+
+            .content-grid> :nth-child(9) {
+                grid-area: bili;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                grid-template-areas:
+                    "news news news"
+                    "weibo douyin baidu"
+                    "toutiao zhihu hackerNews"
+                    "rednote bili bili";
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .content-grid {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+                grid-template-areas:
+                    "news news news news"
+                    "weibo douyin baidu toutiao"
+                    "zhihu hackerNews rednote bili";
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 767px) {
+            .app-header {
+                flex-direction: column;
+                gap: var(--spacing-md);
+                padding: var(--spacing-lg) var(--spacing-md);
+            }
+
+            .app-title {
+                font-size: var(--font-size-2xl);
+            }
+
+            .app-main {
+                padding: var(--spacing-lg) var(--spacing-md);
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+
+        /* 天气预报样式 */
+        .weather-section {
+            margin: 0 var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            overflow: hidden;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        .weather-container {
+            padding: var(--spacing-lg);
+        }
+
+        .weather-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .weather-title {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: white;
+            font-size: var(--font-size-2xl);
+            font-weight: 700;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .weather-icon {
+            font-size: var(--font-size-2xl);
+        }
+
+        .weather-update-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: var(--font-size-sm);
+            background: rgba(255, 255, 255, 0.1);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+        }
+
+        .weather-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: var(--spacing-xl);
+        }
+
+        @media (max-width: 768px) {
+            .weather-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .weather-current {
+            background: linear-gradient(135deg, rgba(116, 185, 255, 0.8) 0%, rgba(9, 132, 227, 0.8) 100%);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-xl);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .weather-current-info {
+            color: white;
+        }
+
+        .weather-temp {
+            font-size: 3.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .weather-condition {
+            font-size: var(--font-size-xl);
+            font-weight: 500;
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .weather-wind {
+            font-size: var(--font-size-sm);
+            opacity: 0.9;
+        }
+
+        .weather-icon-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .weather-current-emoji {
+            font-size: 4rem;
+            line-height: 1;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+        }
+
+        .weather-forecast-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            backdrop-filter: blur(10px);
+        }
+
+        .forecast-title {
+            color: white;
+            font-size: var(--font-size-lg);
+            font-weight: 600;
+            margin: 0 0 var(--spacing-md) 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .weather-forecast {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: var(--spacing-md);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .weather-forecast-item {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-sm);
+            text-align: center;
+            color: white;
+            transition: var(--transition);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 70px;
+        }
+
+        .weather-forecast-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .forecast-time {
+            font-size: var(--font-size-xs);
+            opacity: 0.8;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .forecast-emoji {
+            font-size: 1.5rem;
+            line-height: 1;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .forecast-temp {
+            font-size: var(--font-size-sm);
+            font-weight: 600;
+        }
+
+        /* 滚动条样式 */
+        .weather-forecast::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+
+        .weather-forecast::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+
+        .weather-forecast::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+
+        .weather-forecast::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 60秒新闻样式 */
+        .news-60s {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .news-60s:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .news-60s-header {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            overflow: hidden;
+        }
+
+        .news-60s-cover {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.7;
+            display: none; /* 默认隐藏，JavaScript会控制显示 */
+        }
+
+        .news-60s-date {
+            position: absolute;
+            top: var(--spacing-lg);
+            left: var(--spacing-lg);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .news-60s-content {
+            padding: var(--spacing-xl);
+        }
+
+        .news-60s-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .news-60s-item {
+            padding: var(--spacing-md) 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: var(--font-size-sm);
+            line-height: 1.6;
+            color: var(--text-primary);
+            position: relative;
+            padding-left: var(--spacing-lg);
+        }
+
+        .news-60s-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .news-60s-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-60s-tip {
+            margin-top: var(--spacing-lg);
+            padding: var(--spacing-md);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: var(--radius-md);
+            font-style: italic;
+            text-align: center;
+            font-size: var(--font-size-sm);
+        }
+
+        .news-60s-footer {
+            margin-top: var(--spacing-lg);
+            padding-top: var(--spacing-md);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+
+        /* 热榜样式 */
+        .hot-list {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transition: var(--transition);
+        }
+
+        .hot-list:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .hot-list-header {
+            padding: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            font-weight: 700;
+            font-size: var(--font-size-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .hot-list-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--radius-sm);
+            font-size: var(--font-size-sm);
+        }
+
+        .hot-list-content {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .hot-list-item {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .hot-list-item:hover {
+            background: var(--hover-color);
+            transform: translateX(4px);
+        }
+
+        .hot-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .hot-rank {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: var(--font-size-sm);
+            margin-right: var(--spacing-md);
+            border-radius: var(--radius-sm);
+            flex-shrink: 0;
+        }
+
+        .hot-rank.top {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+        }
+
+        .hot-rank.normal {
+            background: var(--gray-light);
+            color: var(--text-secondary);
+        }
+
+        .hot-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .hot-title {
+            font-weight: 500;
+            margin-bottom: var(--spacing-xs);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            color: var(--text-primary);
+        }
+
+        .hot-meta {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            font-size: var(--font-size-xs);
+            color: var(--text-secondary);
+        }
+
+        .hot-value {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        /* 加载状态 */
+        .loading-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-2xl);
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: var(--spacing-sm);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <header class="app-header">
+            <h1 class="app-title">全球热点聚合</h1>
+            <!-- <div class="header-actions">
+                <div class="last-updated">
+                    更新于 <span id="updateTime">2025-10-31 10:08</span>
+                </div>
+            </div> -->
+        </header>
+
+        <!-- 天气预报区域 -->
+        <div class="weather-section" id="weatherSection">
+            <div class="weather-container">
+                <div class="weather-header">
+                    <h2 class="weather-title">
+                        <span class="weather-icon">🌤️</span>
+                        <span id="weatherLocation">天气预报</span>
+                    </h2>
+                    <div class="weather-update-time" id="weatherUpdateTime">更新于 --</div>
+                </div>
+                <div class="weather-content">
+                    <div class="weather-current" id="weatherCurrent">
+                        <div class="weather-current-info">
+                            <div class="weather-temp" id="currentTemp">--°C</div>
+                            <div class="weather-condition" id="currentCondition">--</div>
+                            <div class="weather-wind" id="currentWind">-- --</div>
+                        </div>
+                        <div class="weather-icon-container">
+                            <div class="weather-current-emoji" id="currentWeatherEmoji">🌤️</div>
+                        </div>
+                    </div>
+                    <div class="weather-forecast-container">
+                        <h3 class="forecast-title">24小时预报</h3>
+                        <div class="weather-forecast" id="weatherForecast">
+                            <!-- 天气预报将在这里动态生成 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <main class="app-main">
+            <div class="content-grid" id="contentGrid">
+                <!-- 60秒新闻 -->
+                <div class="news-60s fade-in" style="animation-delay: 0.1s;">
+                    <div class="news-60s-header">
+                        <img class="news-60s-cover" src="" alt="新闻封面" id="newsCover">
+                        <div class="news-60s-date" id="newsDate">2025年10月31日 星期五</div>
+                    </div>
+                    <div class="news-60s-content">
+                        <ul class="news-60s-list" id="newsList">
+                            <!-- 新闻列表将在这里动态生成 -->
+                        </ul>
+                        <div class="news-60s-tip" id="newsTip">
+                            所有随风而逝的都属于昨天，所有历经风雨后依然留存下来的，才是面向未来的基石
+                        </div>
+                        <div class="news-60s-footer">
+                            <span id="lunarDate">乙巳年九月十一</span>
+                            <span>数据来源: 60s新闻</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 微博热搜 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.2s;">
+                    <div class="hot-list-header">
+                        <span>微博热搜榜</span>
+                        <span class="hot-list-count" id="weiboCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="weiboList">
+                        <!-- 微博热搜列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 抖音热搜 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.3s;">
+                    <div class="hot-list-header">
+                        <span>抖音热搜榜</span>
+                        <span class="hot-list-count" id="douyinCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="douyinList">
+                        <!-- 抖音热搜列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 百度热搜 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.4s;">
+                    <div class="hot-list-header">
+                        <span>百度热搜榜</span>
+                        <span class="hot-list-count" id="baiduCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="baiduList">
+                        <!-- 百度热搜列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 头条热搜 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.5s;">
+                    <div class="hot-list-header">
+                        <span>今日头条热榜</span>
+                        <span class="hot-list-count" id="toutiaoCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="toutiaoList">
+                        <!-- 头条热搜列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 知乎热榜 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.6s;">
+                    <div class="hot-list-header">
+                        <span>知乎热榜</span>
+                        <span class="hot-list-count" id="zhihuCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="zhihuList">
+                        <!-- 知乎热榜列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- Hacker News -->
+                <div class="hot-list fade-in" style="animation-delay: 0.7s;">
+                    <div class="hot-list-header">
+                        <span>Hacker News</span>
+                        <span class="hot-list-count" id="hackerNewsCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="hackerNewsList">
+                        <!-- Hacker News列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- 小红书热搜 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.8s;">
+                    <div class="hot-list-header">
+                        <span>小红书热榜</span>
+                        <span class="hot-list-count" id="rednoteCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="rednoteList">
+                        <!-- 小红书热搜列表将在这里动态生成 -->
+                    </div>
+                </div>
+
+                <!-- B站热门 -->
+                <div class="hot-list fade-in" style="animation-delay: 0.9s;">
+                    <div class="hot-list-header">
+                        <span>B站热门</span>
+                        <span class="hot-list-count" id="biliCount">0 条</span>
+                    </div>
+                    <div class="hot-list-content" id="biliList">
+                        <!-- B站热门列表将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 加载所有JSON数据
+        const apiData = {};
+        const loadPromises = [
+            loadJSON('./api-data/news60s.json').then(data => apiData.news60s = data),
+            loadJSON('./api-data/weibo.json').then(data => apiData.weibo = data),
+            loadJSON('./api-data/douyin.json').then(data => apiData.douyin = data),
+            loadJSON('./api-data/baidu.json').then(data => apiData.baidu = data),
+            loadJSON('./api-data/toutiao.json').then(data => apiData.toutiao = data),
+            loadJSON('./api-data/zhihu.json').then(data => apiData.zhihu = data),
+            loadJSON('./api-data/hacker-news.json').then(data => apiData.hackerNews = data),
+            loadJSON('./api-data/rednote.json').then(data => apiData.rednote = data),
+            loadJSON('./api-data/bili.json').then(data => apiData.bili = data),
+            loadJSON('./api-data/weather.json').then(data => apiData.weather = data)
+        ];
+
+        // 加载JSON文件
+        async function loadJSON(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error(`加载 ${url} 失败:`, error);
+                return null;
+            }
+        }
+
+        // 格式化热度值
+        function formatHotValue(value) {
+            if (!value || value === 0) return '';
+
+            const num = Number(value);
+            if (isNaN(num)) return String(value);
+
+            if (num >= 10000) {
+                return `${(num / 10000).toFixed(1)}万`;
+            }
+
+            return num.toLocaleString();
+        }
+
+        // 渲染60秒新闻
+        function renderNews60s(data) {
+            if (!data) {
+                document.getElementById('newsList').innerHTML = '<li class="loading-state">暂无数据</li>';
+                return;
+            }
+
+            const newsList = document.getElementById('newsList');
+            const newsItems = data.news || [];
+
+            if (newsItems.length === 0) {
+                newsList.innerHTML = '<li class="loading-state">暂无新闻</li>';
+                return;
+            }
+
+            newsList.innerHTML = newsItems.map(item =>
+                `<li class="news-60s-item">${item}</li>`
+            ).join('');
+
+            // 设置其他信息
+            const newsCover = document.getElementById('newsCover');
+            const newsHeader = document.querySelector('.news-60s-header');
+
+            if (data.cover) {
+                newsCover.src = data.cover;
+                newsCover.style.display = 'block';
+
+                // 添加图片加载错误处理
+                newsCover.onerror = function() {
+                    this.style.display = 'none';
+                    // 图片加载失败时，使用纯色背景
+                    newsHeader.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                };
+
+                // 图片加载成功时，确保背景图片样式正确
+                newsCover.onload = function() {
+                    newsHeader.style.background = '';
+                };
+            } else {
+                newsCover.style.display = 'none';
+                // 如果没有封面图片，添加纯色背景
+                newsHeader.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+            }
+
+            document.getElementById('newsDate').textContent =
+                `${data.date} ${data.day_of_week || ''}`;
+            document.getElementById('newsTip').textContent = data.tip || '';
+            document.getElementById('lunarDate').textContent = data.lunar_date || '';
+            const updateTimeElement = document.getElementById('updateTime');
+            if (updateTimeElement) {
+                updateTimeElement.textContent = data.api_updated || '';
+            }
+        }
+
+        // 渲染热榜
+        function renderHotList(data, containerId, countId, options = {}) {
+            const container = document.getElementById(containerId);
+            const countElement = document.getElementById(countId);
+
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                if (container) container.innerHTML = '<div class="loading-state">暂无数据</div>';
+                if (countElement) countElement.textContent = '0 条';
+                return;
+            }
+
+            const items = data.slice(0, options.maxItems || 20);
+            countElement.textContent = `${data.length} 条`;
+
+            container.innerHTML = items.map((item, index) => {
+                const rank = index + 1;
+                const isTop = rank <= 3;
+                const title = item.title || item.text || '';
+                const hotValue = formatHotValue(item.hot_value || item.hot || item.heat || '');
+                const link = item.link || item.url || '#';
+
+                return `
+                    <a href="${link}" target="_blank" class="hot-list-item">
+                        <div class="hot-rank ${isTop ? 'top' : 'normal'}">${rank}</div>
+                        <div class="hot-content">
+                            <div class="hot-title">${title}</div>
+                            <div class="hot-meta">
+                                ${hotValue ? `<span class="hot-value">${hotValue}</span>` : ''}
+                            </div>
+                        </div>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        // 获取天气对应的emoji
+        function getWeatherEmoji(condition) {
+            const weatherEmojis = {
+                '晴': '☀️',
+                '多云': '⛅',
+                '阴': '☁️',
+                '小雨': '🌦️',
+                '中雨': '🌧️',
+                '大雨': '⛈️',
+                '雷阵雨': '⛈️',
+                '雪': '❄️',
+                '雾': '🌫️',
+                '霾': '😷',
+                '风': '💨'
+            };
+
+            for (const [key, emoji] of Object.entries(weatherEmojis)) {
+                if (condition.includes(key)) {
+                    return emoji;
+                }
+            }
+
+            return '🌤️'; // 默认emoji
+        }
+
+        // 渲染独立的天气预报区域
+        function renderWeatherSection(data) {
+            if (!data || !data.location || !data.hourly_forecast) {
+                document.getElementById('weatherSection').style.display = 'none';
+                return;
+            }
+
+            const current = data.hourly_forecast[0];
+
+            // 更新当前位置
+            document.getElementById('weatherLocation').textContent = `${data.location.name} 天气预报`;
+
+            // 更新当前天气
+            document.getElementById('currentTemp').textContent = `${current.temperature}°C`;
+            document.getElementById('currentCondition').textContent = current.condition;
+            document.getElementById('currentWind').textContent = `${current.wind_direction} ${current.wind_power}级`;
+
+            // 更新天气图标 - 使用emoji
+            const currentEmoji = getWeatherEmoji(current.condition);
+            document.getElementById('currentWeatherEmoji').textContent = currentEmoji;
+
+            // 更新24小时预报
+            const forecastContainer = document.getElementById('weatherForecast');
+            const forecastItems = data.hourly_forecast.slice(0, 24); // 显示24小时预报
+
+            forecastContainer.innerHTML = forecastItems.map(item => {
+                const time = new Date(item.datetime);
+                const hour = time.getHours();
+                const timeStr = `${hour}:00`;
+                const emoji = getWeatherEmoji(item.condition);
+
+                return `
+                    <div class="weather-forecast-item">
+                        <div class="forecast-time">${timeStr}</div>
+                        <div class="forecast-emoji">${emoji}</div>
+                        <div class="forecast-temp">${item.temperature}°</div>
+                    </div>
+                `;
+            }).join('');
+
+            // 更新时间显示 - 简化显示
+            const now = new Date();
+            const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+            document.getElementById('weatherUpdateTime').textContent = `更新于 ${timeStr}`;
+        }
+
+        // 初始化页面
+        async function initializePage() {
+            await Promise.all(loadPromises);
+
+            // 渲染各个组件
+            renderWeatherSection(apiData.weather);
+            renderNews60s(apiData.news60s);
+
+            renderHotList(apiData.weibo, 'weiboList', 'weiboCount');
+            renderHotList(apiData.douyin, 'douyinList', 'douyinCount');
+            renderHotList(apiData.baidu, 'baiduList', 'baiduCount', { maxItems: 10 });
+            renderHotList(apiData.toutiao, 'toutiaoList', 'toutiaoCount');
+            renderHotList(apiData.zhihu, 'zhihuList', 'zhihuCount');
+            renderHotList(apiData.hackerNews, 'hackerNewsList', 'hackerNewsCount');
+            renderHotList(apiData.rednote, 'rednoteList', 'rednoteCount');
+            renderHotList(apiData.bili, 'biliList', 'biliCount');
+
+            console.log('页面初始化完成');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+
+</html>

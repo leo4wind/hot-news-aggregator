@@ -7,6 +7,7 @@
 - **60秒新闻** - 每日新闻摘要
 - **天气预报** - 24小时详细天气预报，emoji图标显示
 - **热搜榜单** - 覆盖8个主流平台：
+
   - 微博热搜
   - 抖音热搜
   - 百度热搜
@@ -34,17 +35,19 @@
 
 1. 克隆仓库到本地
 2. 使用任意HTTP服务器访问根目录：
-   ```bash
-   # 使用Python
-   python -m http.server 8000
 
-   # 使用Node.js
-   npx serve .
+  ```bash
+  # 使用Python
+  python -m http.server 8000
 
-   # 使用PHP
-   php -S localhost:8000
-   ```
-3. 访问 http://localhost:8000
+  # 使用Node.js
+  npx serve .
+
+  # 使用PHP
+  php -S localhost:8000
+  ```
+
+3. 访问 <http://localhost:8000>
 
 ## 📊 数据来源
 
@@ -55,6 +58,7 @@
 ## 🔄 更新数据
 
 如需更新最新数据，需要：
+
 1. 请求API获取最新数据
 2. 更新`api-data/`目录下的JSON文件
 3. 提交并推送到GitHub
@@ -82,8 +86,7 @@
 
 ## 🌐 部署说明
 
-本网站已配置为GitHub Pages，访问地址：
-`https://[你的用户名].github.io/[仓库名]/`
+本网站已配置为GitHub Pages，访问地址： `https://[你的用户名].github.io/[仓库名]/`
 
 ## 📄 许可证
 
@@ -93,6 +96,6 @@ MIT License - 可自由使用和修改
 
 欢迎提交Issue和Pull Request！
 
----
+## 1
 
-*最后更新: 2025-10-31*
+_最后更新: 2025-10-31_
